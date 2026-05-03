@@ -1,16 +1,19 @@
 name: startup_app_route_on
-description: A new Flutter project.
+description: Butuan Transit MVP
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '^3.11.0'
+  sdk: '>=3.11.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
   google_generative_ai: ^0.4.7
+  # The new REAL map packages:
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
 
 dev_dependencies:
   flutter_test:
@@ -19,7 +22,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   fonts:
     - family: Inter
       fonts:
@@ -28,3 +30,6 @@ flutter:
           weight: 700
         - asset: assets/fonts/Inter_18pt-Black.ttf
           weight: 900
+  assets:
+    - assets/Butuan_map.png
+    - assets/Tricycle_map.png

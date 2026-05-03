@@ -10,231 +10,148 @@ class AssistantScreen extends StatefulWidget {
 }
 
 class _AssistantScreenState extends State<AssistantScreen> {
-  bool isInfoSearch = true; 
-  bool isLoading = false;
-  final TextEditingController _controller = TextEditingController();
+  // 🔴 REMINDER: Delete this key from Google Cloud after your pitch! 🔴
+  final String apiKey = 'API HERE'; 
+  
+  final TextEditingController _destinationController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-
-  final List<Map<String, dynamic>> _messages = [
+  
+  final List<Map<String, String>> _messages = [
     {
-      'role': 'assistant',
-      'type': 'text',
-      'content': 'BUTUAN TRANSIT AI v1.0 ONLINE. INPUT DESTINATION FOR FARE AND ROUTE GUIDANCE.',
+      'role': 'system',
+      'text': 'ChatON v1.0 ONLINE.\nSP Ordinance 6824-2023 loaded. Input destination for route and fare guidance.'
     }
   ];
-
-  late final GenerativeModel _model;
-  late final ChatSession _chat;
-
-  @override
-  void initState() {
-    super.initState();
-    // PUT YOUR BRAND NEW SECURE API KEY HERE
-    const apiKey = 'AIzaSyB4Jzo5Zw9Ig5L0m9WhfILgjGsuOSjeBsw'; 
-    
-    _model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: apiKey,
-      systemInstruction: Content.system('''
-You are the Butuan City Transit Expert AI. 
-
-FARE LOGIC (LTFRB & SP ORDINANCE NO. 6824-2023): 
-1. PUJ / Multicab: ₱14.00 base fare.
-2. Motorized Tricycle: ₱10.00 base fare.
-* CRITICAL MULTI-LEG MATH: If a trip requires TWO vehicles (e.g., Tricycle from barangay + Multicab on highway), you MUST add both base fares for the TOTAL EXPENSE (₱10 + ₱14 = ₱24).
-
-BUTUAN ROUTE MATRIX:
-- J.C. Aquino Ave (Highway): Where Robinsons, SM, and Gaisano are. ONLY Multicabs (R1/R2) travel here.
-- Route 1 (R1) / Route 2 (R2) Multicab: Use these for highway travel.
-- Orange Tricycle: Maon, Obrero, City Hall, City Proper.
-- Green Tricycle: Banza, Maug, Mahay.
-- Yellow Tricycle: Villa Kananga, San Vicente.
-- Red Tricycle: Holy Redeemer, Langihan.
-
-MULTI-LEG ROUTING RULES:
-If starting inside a barangay (like Maon) going to a highway mall (like Robinsons), DO NOT use one vehicle. You MUST recommend taking a Tricycle to the highway, then transferring to a Multicab.
-
-STRICT FORMAT RULES:
-1. NEVER output "N/A". Estimate distance geographically.
-2. NEVER use markdown formatting like asterisks (**).
-3. Distinguish the steps and vehicles clearly.
-4. Reply EXACTLY in this format, with no extra text before or after:
-PLAN: [Step 1: Vehicle and route. Step 2: Vehicle and route.]
-BREAKDOWN: [Vehicle 1 (₱Fare)] + [Vehicle 2 (₱Fare)]
-DIST: [Estimated Number] KM
-TIME: [Estimated Number] MIN
-EXPENSE: ₱[Calculated Total Amount]
-
-EXAMPLE TRIP:
-User: Maon to Robinsons
-PLAN: Step 1: Take an Orange Tricycle from Maon to the highway. Step 2: Transfer to an R1 or R2 Multicab to Robinsons.
-BREAKDOWN: Orange Tricycle (₱10) + Multicab (₱14)
-DIST: 4 KM
-TIME: 15 MIN
-EXPENSE: ₱24
-'''),
-    );
-    _chat = _model.startChat();
-  }
+  
+  bool _isLoading = false;
 
   Future<void> _sendMessage() async {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
+    final text = _destinationController.text.trim();
+    if (text.isEmpty || apiKey == 'YOUR_API_KEY_HERE') return;
 
     setState(() {
-      _messages.add({
-        'role': 'user',
-        'type': 'text',
-        'content': isInfoSearch ? text : 'ROUTE TO ${text.toUpperCase()}',
-      });
-      isLoading = true;
+      _messages.add({'role': 'user', 'text': text});
+      _isLoading = true;
     });
-
-    _controller.clear();
+    
+    _destinationController.clear();
     _scrollToBottom();
 
     try {
-      final prompt = isInfoSearch 
-          ? text 
-          : "Calculate route and fare to $text. Reply strictly using the requested format tags (PLAN:, BREAKDOWN:, DIST:, TIME:, EXPENSE:).";
-      
-      final response = await _chat.sendMessage(Content.text(prompt));
-      final responseText = (response.text ?? "Error calculating route.")
-          .replaceAll('**', '')
-          .replaceAll('*', ''); 
+      final model = GenerativeModel(
+        model: 'gemini-2.5-flash',
+        apiKey: apiKey,
+        // 🔥 THE ULTIMATE MASTER PROMPT 🔥
+        systemInstruction: Content.system(
+          '''You are ChatON, the official Butuan Transit Hub AI Assistant.
 
-      if (!mounted) return; 
+          You provide hyper-local, ordinance-aware, and realistic transit directions for Butuan City.
+          Your tone is helpful, efficient, and natural—matching how locals actually give directions while remaining clear for tourists.
+
+          🚨 EMERGENCY PROTOCOL:
+          If the user mentions an emergency (accident, medical, safety):
+          1. Immediately provide the nearest facility based on the user’s location:
+             - Hospitals: Manuel J. Santos Hospital (Downtown), Butuan Doctors Hospital (J.C. Aquino Ave), Agusan del Norte Provincial Hospital (Libertad/Tiniwisan)
+             - Police Stations: Station 1 (Holy Redeemer), Station 2 (Langihan), Station 3 (Capitol)
+             - Fire Station: Butuan City Fire Station (Villa Kananga)
+          2. Clearly highlight the facility first.
+          3. Then provide transport instructions if needed.
+
+          🚍 TRANSIT PROTOCOL:
+          - Always use the 7 official rationalized PUJ routes and the specific orange tricycle stripe colors for directions.
+          - Calculate fares based on the Add-on Method and provide a clear total estimated fare.
+          - Use clear, step-by-step instructions with recognizable landmarks.
+          - If the destination is a known tourist spot, include a brief description and tips.
+
+          Whenever a user asks for directions, your response MUST be formatted exactly like this:
+
+          🚌 ROUTE OPTIONS: Specify the exact PUJ route numbers and specific Orange Tricycle stripe colors.
+
+          CRITICAL TRICYCLE RULE: All tricycles are ORANGE, but you MUST explicitly state the STRIPE COLOR based on the destination. You cannot just say "Orange Tricycle". Use this exact mapping:
+          - Solid Orange (No Stripes) = City Proper / Maon / Doongan / Plaza Park
+          - Orange with WHITE Stripes = Libertad / Ambago
+          - Orange with GREEN Stripes = Ampayon / Banza / Maug / Mahogany
+          - Orange with YELLOW Stripes = Villa Kanangga
+          - Orange with RED Stripes = Masao
+
+          CRITICAL PUJ RULE: Use ONLY these 7 official rationalized PUJ routes:
+          - Route 1: South Montilla Blvd. to Crossing Dumalagan (Passes Bancasi Airport)
+          - Route 2: Butuan Jeepney Integrated Terminal to Crossing Dumalagan (Passes Bancasi Airport)
+          - Route 3: Ampayon Triangle to Libertad Overpass
+          - Route 4: De Oro to Butuan Integrated Jeepney Terminal
+          - Route 5: Santo Niño to Butuan Integrated Jeepney Terminal
+          - Route 6: Maguinda to Agusan del Norte Provincial Capitol
+          - Route 7: Tungao to Agusan del Norte Provincial Capitol
+
+          🗺️ ROUTING & TRANSFER LOGIC (CRITICAL):
+          - DO NOT invent direct tricycle rides for long distances.
+          - If a user is traveling from a local barangay (e.g., Maon) to a major highway destination (e.g., Bancasi Airport), they CANNOT take a direct tricycle. You MUST instruct them to transfer. 
+          - STRICT DESTINATION MATCHING: You cannot guess which route goes where. You MUST match the destination to the explicit landmarks in the PUJ list. 
+          - AIRPORT RULE: If the destination is Bancasi Airport, you are strictly FORBIDDEN from suggesting Route 3. You MUST suggest Route 1 or Route 2.
+          - Example Airport Transfer: "Take a Tricycle from your location to a downtown hub, then transfer to a PUJ (Route 1 or Route 2) heading to Bancasi Airport."
+
+          💸 FARE GUIDELINES (Add-on Method):
+          - PUJ Base Fare: ₱9.00 (covers the first 4 km).
+          - PUJ Succeeding Rate: Add ₱1.50 per kilometer after the first 4 km.
+          - Tricycle Base Fare: ₱10.00.
+          - Calculation Rule: Calculate the base fare plus the estimated succeeding kilometer fee based on the zone distance. Round the final total to the nearest 0.25 centavos.
+          - Presentation: Explicitly state the breakdown to the user (e.g., "Total Estimated Fare: ₱19.00 (₱10.00 Tricycle + ₱9.00 PUJ)").
+
+          📍 DIRECTIONS STYLE:
+          - Give clear, step-by-step landmarks and transfer details.
+          - Include recognizable landmarks (SM Butuan, Robinsons, Gaisano, Cathedral, Petron stations, etc.)
+          - Include what the user should say to the driver (e.g., “Banza lang”, “City proper lang”)
+          - Prefer landmark-based navigation over technical zones when possible
+          - Keep instructions simple, practical, and easy to follow
+          - If needed, suggest asking locals or drivers for confirmation
+
+          🗣️ LANGUAGE PROTOCOL (CRITICAL):
+          - You MUST communicate and explain directions exclusively in English. 
+          - Do not respond in Tagalog, Bisaya, or any other language, even if the user asks their question in those languages.
+          - EXCEPTION: You MUST retain local Butuan place names, landmarks, and specific driver instructions (e.g., "Banza lang po", "Bancasi Airport") in their native local phrasing. Do not attempt to translate local proper nouns or transit jargon into English.
+
+          🌍 TOURIST MODE:
+          - When the destination is a known tourist spot:
+            • Give a short 1–2 sentence description
+            • Explain why it’s popular or historically significant
+          - Prioritize well-known landmarks and attractions such as:
+            • Balangay Shrine Museum
+            • Balangay Bugoy's Peak
+            • Alicia’s Ridge
+            • Butuan National Museum
+            • Bood Promontory Eco Park
+            • Delta Discovery Park
+            • Guingona Park
+            • St. Joseph Cathedral
+          - Use beginner-friendly language (avoid overly technical local terms unless explained)
+          - Optionally include helpful tips (best time to visit, what to expect)
+
+          ⚠️ CONSTRAINTS:
+          - WARNING: Do NOT provide vague, generic answers.
+          - Outside Butuan City → Respond: “Sorry, I can only assist with routes within Butuan City.” Only suggest hiring a private vehicle if outside Butuan.
+          - Night Travel → Inform users that after 10:00 PM, tricycles may require “pakyaw” (negotiated fare)
+          - If the user’s location or destination is unclear → Ask a short clarification question before giving directions'''
+        ),
+      );
+
+      final content = [Content.text(text)];
+      final response = await model.generateContent(content);
 
       setState(() {
-        isLoading = false;
-      });
-
-      if (isInfoSearch) {
-        setState(() {
-          _messages.add({
-            'role': 'assistant',
-            'type': 'text',
-            'content': responseText,
-          });
-        });
-        _scrollToBottom();
-      } else {
-        _showTransitChoiceDialog(responseText);
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        _messages.add({
-          'role': 'assistant',
-          'type': 'text',
-          'content': 'SYSTEM ERROR: CONNECTION FAILED. $e',
-        });
+        _messages.add({'role': 'system', 'text': response.text ?? 'Error generating route data.'});
+        _isLoading = false;
       });
       _scrollToBottom();
-    }
-  }
-
-  void _showTransitChoiceDialog(String aiResponseText) {
-    showDialog(
-      context: context,
-      barrierDismissible: false, 
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-            side: BorderSide(color: Colors.black, width: 2),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  color: Colors.black,
-                  child: Text('⚠️ PROJECT SCOPE ADVISORY', style: MiffyStyle.overline.copyWith(color: Colors.white)),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'VERIFIED TRANSIT ONLY',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 20, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'It is highly recommended to ride with verified PUJs and Tricycles using our calculated routes. Going to unverified terminals for private drop-offs falls outside the scope of our standard pricing matrix and involves unregulated bargaining.',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, height: 1.5),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: MiffyButton(
-                    text: 'USE VERIFIED ROUTE',
-                    onPressed: () {
-                      Navigator.pop(context); 
-                      _addCalculatedRoute(aiResponseText);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: MiffyButton(
-                    text: 'GO TO UNVERIFIED TERMINAL',
-                    isOutline: true,
-                    onPressed: () {
-                      Navigator.pop(context); 
-                      _addBargainRoute();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _addCalculatedRoute(String responseText) {
-    setState(() {
-      _messages.add({
-        'role': 'assistant',
-        'type': 'text',
-        'content': '✅ VERIFIED ROUTE ACCEPTED. Generating Ticket...',
-      });
-      _messages.add({
-        'role': 'assistant',
-        'type': 'guidance',
-        'instructions': _extractData(responseText, 'PLAN:'),
-        'breakdown': _extractData(responseText, 'BREAKDOWN:'), 
-        'distance': _extractData(responseText, 'DIST:').replaceAll('KM', '').trim(),
-        'time': _extractData(responseText, 'TIME:').replaceAll('MIN', '').trim(),
-        'expense': _extractData(responseText, 'EXPENSE:'), 
-      });
-    });
-    _scrollToBottom();
-  }
-
-  void _addBargainRoute() {
-    setState(() {
-      _messages.add({
-        'role': 'assistant',
-        'type': 'text',
-        'content': '⚠️ UNVERIFIED TERMINAL SELECTED.\n\nPlease proceed to the nearest transport terminal. Private hire trips are unregulated by our system. \n\nPrepare to negotiate pricing directly with the driver based on distance and area restrictions.',
-      });
-    });
-    _scrollToBottom();
-  }
-
-  String _extractData(String source, String key) {
-    try {
-      final lines = source.split('\n');
-      final line = lines.firstWhere((l) => l.trim().startsWith(key), orElse: () => '$key Unknown');
-      return line.replaceFirst(key, '').trim();
+      
     } catch (e) {
-      return 'Unknown';
+      setState(() {
+        _messages.add({
+          'role': 'system', 
+          'text': '⚠️ CONNECTION FAILED.\n\nExact Error: $e'
+        });
+        _isLoading = false;
+      });
+      _scrollToBottom();
     }
   }
 
@@ -254,32 +171,28 @@ EXPENSE: ₱24
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // --- HEADER ---
         Container(
-          width: double.infinity,
           padding: const EdgeInsets.all(24),
           color: Colors.black,
+          width: double.infinity,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                  const Icon(Icons.forum, color: Colors.white, size: 20),
                   const SizedBox(width: 12),
-                  Text('TRANSIT ASSISTANT', style: MiffyStyle.headerBlack.copyWith(color: Colors.white, fontSize: 20)),
+                  Text('ChatON ASSISTANT', style: MiffyStyle.headerBlack.copyWith(color: Colors.white, fontSize: 20)),
                 ],
               ),
               const SizedBox(height: 8),
-              Text('SP ORDINANCE 6824-2023 INJECTED', style: MiffyStyle.overline.copyWith(color: Colors.white60)),
+              Text('POWERED BY GEMINI AI', style: MiffyStyle.overline.copyWith(color: Colors.white60)),
             ],
           ),
         ),
-        Row(
-          children: [
-            Expanded(child: _buildTab('INFO SEARCH', true)),
-            Expanded(child: _buildTab('FARE CALC', false)),
-          ],
-        ),
-        Container(height: 2, color: Colors.black),
+
+        // --- CHAT DISPLAY AREA ---
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
@@ -288,208 +201,91 @@ EXPENSE: ₱24
             itemBuilder: (context, index) {
               final msg = _messages[index];
               final isUser = msg['role'] == 'user';
-
+              
               return Padding(
-                padding: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.only(bottom: 16),
                 child: Column(
                   crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   children: [
-                    Text(isUser ? 'PASSENGER' : 'SYSTEM', style: MiffyStyle.overline),
-                    const SizedBox(height: 8),
-                    msg['type'] == 'text' 
-                        ? _buildTextBubble(msg['content'], isUser)
-                        : _buildGuidanceCard(msg),
+                    Text(
+                      isUser ? 'PASSENGERS' : 'ChatON', 
+                      style: MiffyStyle.overline.copyWith(color: Colors.black54)
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isUser ? const Color(0xFFFFD500) : Colors.white,
+                        border: Border.all(color: Colors.black, width: 2),
+                        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(3, 3))],
+                      ),
+                      child: Text(
+                        msg['text']!,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, height: 1.5),
+                      ),
+                    ),
                   ],
                 ),
               );
             },
           ),
         ),
-        if (isLoading)
+
+        // --- LOADING INDICATOR ---
+        if (_isLoading)
           const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircularProgressIndicator(color: Colors.black),
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: LinearProgressIndicator(color: Colors.black, backgroundColor: Colors.white),
           ),
+
+        // --- BOTTOM INPUT AREA ---
         Container(
+          padding: const EdgeInsets.all(24),
           decoration: const BoxDecoration(
+            color: Colors.white,
             border: Border(top: BorderSide(color: Colors.black, width: 2)),
           ),
-          padding: const EdgeInsets.all(24),
-          child: isInfoSearch 
-              ? Row(
-                  children: [
-                    Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 2),
+                        color: Colors.grey.shade100,
+                      ),
                       child: TextField(
-                        controller: _controller,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                        decoration: const InputDecoration(hintText: 'Ask about routes...'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 56,
-                      width: 56,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          padding: EdgeInsets.zero,
-                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                        controller: _destinationController,
+                        onSubmitted: (_) => _sendMessage(),
+                        decoration: const InputDecoration(
+                          hintText: 'Ask about routes, fares, places...',
+                          hintStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.black38),
+                          border: InputBorder.none,
                         ),
-                        onPressed: _sendMessage,
-                        child: const Icon(Icons.send, color: Colors.white),
                       ),
                     ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    TextField(
-                      controller: _controller,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                      decoration: const InputDecoration(hintText: 'Destination landmark...'),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: _sendMessage,
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        border: Border.all(color: Colors.black, width: 2),
+                      ),
+                      child: const Icon(Icons.send, color: Colors.white),
                     ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: MiffyButton(text: 'CALCULATE JOURNEY', onPressed: _sendMessage),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _buildTab(String text, bool isTabInfoSearch) {
-    final isActive = isInfoSearch == isTabInfoSearch;
-    return GestureDetector(
-      onTap: () => setState(() => isInfoSearch = isTabInfoSearch),
-      child: Container(
-        color: isActive ? Colors.black : Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        alignment: Alignment.center,
-        child: Text(
-          text,
-          style: MiffyStyle.overline.copyWith(
-            color: isActive ? Colors.white : Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextBubble(String text, bool isUser) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isUser ? Colors.black : Colors.white,
-        border: Border.all(color: Colors.black, width: 2),
-        boxShadow: isUser ? [MiffyStyle.hardShadow] : null,
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: isUser ? Colors.white : Colors.black,
-          height: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGuidanceCard(Map<String, dynamic> data) {
-    return Container(
-      decoration: MiffyStyle.cardDecoration,
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            color: Colors.black,
-            child: Row(
-              children: [
-                const Icon(Icons.receipt_long, color: Colors.white, size: 16),
-                const SizedBox(width: 8),
-                Text('TRANSIT ITINERARY', style: MiffyStyle.overline.copyWith(color: Colors.white)),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('RECOMMENDED ROUTE', style: MiffyStyle.overline.copyWith(color: Colors.black38)),
-                const SizedBox(height: 6),
-                Text(
-                  data['instructions'] ?? '', 
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, height: 1.4),
-                ),
-                const SizedBox(height: 16),
-                Text('FARE BREAKDOWN', style: MiffyStyle.overline.copyWith(color: Colors.black38)),
-                const SizedBox(height: 4),
-                Text(
-                  data['breakdown'] ?? '', 
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.black87),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            decoration: const BoxDecoration(
-              border: Border.symmetric(horizontal: BorderSide(color: Colors.black, width: 2)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: const BoxDecoration(border: Border(right: BorderSide(color: Colors.black, width: 2))),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('DISTANCE', style: MiffyStyle.overline),
-                        const SizedBox(height: 4),
-                        Text('${data['distance']} KM', style: MiffyStyle.headerBlack.copyWith(fontSize: 20)),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('EST. TIME', style: MiffyStyle.overline),
-                        const SizedBox(height: 4),
-                        Text('${data['time']} MIN', style: MiffyStyle.headerBlack.copyWith(fontSize: 20)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            color: Colors.black,
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('TOTAL EXPENSE', style: MiffyStyle.overline.copyWith(color: Colors.white70, letterSpacing: 2)),
-                const SizedBox(height: 4),
-                Text(
-                  data['expense'] ?? '₱0.00', 
-                  style: MiffyStyle.headerBlack.copyWith(color: Colors.white, fontSize: 32),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
     );
   }
 }

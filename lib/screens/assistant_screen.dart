@@ -11,7 +11,7 @@ class AssistantScreen extends StatefulWidget {
 
 class _AssistantScreenState extends State<AssistantScreen> {
   // 🔴 REMINDER: Delete this key from Google Cloud after your pitch! 🔴
-  final String apiKey = 'API HERE'; 
+  final String apiKey = 'AIzaSyAJoKnAD6CmMfYGKttaA8JESpBYTT3jfWw'; 
   
   final TextEditingController _destinationController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -27,7 +27,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
   Future<void> _sendMessage() async {
     final text = _destinationController.text.trim();
-    if (text.isEmpty || apiKey == 'YOUR_API_KEY_HERE') return;
+    if (text.isEmpty || apiKey == 'AIzaSyAJoKnAD6CmMfYGKttaA8JESpBYTT3jfWw') return;
 
     setState(() {
       _messages.add({'role': 'user', 'text': text});
@@ -91,11 +91,12 @@ class _AssistantScreenState extends State<AssistantScreen> {
           - Example Airport Transfer: "Take a Tricycle from your location to a downtown hub, then transfer to a PUJ (Route 1 or Route 2) heading to Bancasi Airport."
 
           💸 FARE GUIDELINES (Add-on Method):
-          - PUJ Base Fare: ₱9.00 (covers the first 4 km).
-          - PUJ Succeeding Rate: Add ₱1.50 per kilometer after the first 4 km.
-          - Tricycle Base Fare: ₱10.00.
+          - PUJ Base Fare: ₱17.00 (covers the first 4 km).
+          - PUJ Succeeding Rate: Add ₱2.40 per kilometer after the first 4 km.
+          - Tricycle Base Fare: ₱12.00. (covers the 4 km)
+          - Tricycle Succeeding Rate: Add ₱2.00 per kilometer after the first 2 km.
           - Calculation Rule: Calculate the base fare plus the estimated succeeding kilometer fee based on the zone distance. Round the final total to the nearest 0.25 centavos.
-          - Presentation: Explicitly state the breakdown to the user (e.g., "Total Estimated Fare: ₱19.00 (₱10.00 Tricycle + ₱9.00 PUJ)").
+          - Presentation: Explicitly state the breakdown to the user (e.g., "Total Estimated Fare: ₱19.00 (₱12.00 Tricycle + ₱7.00 PUJ)").
 
           📍 DIRECTIONS STYLE:
           - Give clear, step-by-step landmarks and transfer details.

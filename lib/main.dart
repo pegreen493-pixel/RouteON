@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 // --- YOUR SCREENS ---
 import 'screens/home_screen.dart'; 
 import 'screens/routes_screen.dart';
-import 'screens/fares_screen.dart'; // <-- THIS LINKS THE FARES SCREEN
 import 'screens/assistant_screen.dart';
 
 void main() {

@@ -135,12 +135,6 @@ class ModeCard extends StatelessWidget {
         image: DecorationImage(
           image: AssetImage(imagePath),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            const Color(
-              0xFFFF6026,
-            ).withOpacity(0.7), // The RouteON! orange with 70% opacity
-            BlendMode.srcOver,
-          ),
         ),
       ),
     );

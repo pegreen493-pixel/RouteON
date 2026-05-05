@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:dotted_border/dotted_border.dart';
 import '../theme/miffy_style.dart';
 
 class AssistantScreen extends StatefulWidget {
@@ -11,29 +12,30 @@ class AssistantScreen extends StatefulWidget {
 
 class _AssistantScreenState extends State<AssistantScreen> {
   // 🔴 REMINDER: Delete this key from Google Cloud after your pitch! 🔴
-  final String apiKey = 'AIzaSyAJoKnAD6CmMfYGKttaA8JESpBYTT3jfWw'; 
-  
+  final String apiKey = 'AIzaSyBvMimBXMXNiRtp00LWWw';
+
   final TextEditingController _destinationController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   final List<Map<String, String>> _messages = [
     {
       'role': 'system',
-      'text': 'ChatON v1.0 ONLINE.\nSP Ordinance 6824-2023 loaded. Input destination for route and fare guidance.'
-    }
+      'text':
+          'ChatON v1.0 ONLINE.\nSP Ordinance 6824-2023 loaded. Input destination for route and fare guidance.',
+    },
   ];
-  
+
   bool _isLoading = false;
 
   Future<void> _sendMessage() async {
     final text = _destinationController.text.trim();
-    if (text.isEmpty || apiKey == 'AIzaSyAJoKnAD6CmMfYGKttaA8JESpBYTT3jfWw') return;
+    if (text.isEmpty) return;
 
     setState(() {
       _messages.add({'role': 'user', 'text': text});
       _isLoading = true;
     });
-    
+
     _destinationController.clear();
     _scrollToBottom();
 
@@ -131,7 +133,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
           - WARNING: Do NOT provide vague, generic answers.
           - Outside Butuan City → Respond: “Sorry, I can only assist with routes within Butuan City.” Only suggest hiring a private vehicle if outside Butuan.
           - Night Travel → Inform users that after 10:00 PM, tricycles may require “pakyaw” (negotiated fare)
-          - If the user’s location or destination is unclear → Ask a short clarification question before giving directions'''
+          - If the user’s location or destination is unclear → Ask a short clarification question before giving directions''',
         ),
       );
 
@@ -139,16 +141,18 @@ class _AssistantScreenState extends State<AssistantScreen> {
       final response = await model.generateContent(content);
 
       setState(() {
-        _messages.add({'role': 'system', 'text': response.text ?? 'Error generating route data.'});
+        _messages.add({
+          'role': 'system',
+          'text': response.text ?? 'Error generating route data.',
+        });
         _isLoading = false;
       });
       _scrollToBottom();
-      
     } catch (e) {
       setState(() {
         _messages.add({
-          'role': 'system', 
-          'text': '⚠️ CONNECTION FAILED.\n\nExact Error: $e'
+          'role': 'system',
+          'text': '⚠️ CONNECTION FAILED.\n\nExact Error: $e',
         });
         _isLoading = false;
       });
@@ -172,63 +176,152 @@ class _AssistantScreenState extends State<AssistantScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // --- HEADER ---
+        // --- 2. TOP HEADER BANNER ---
         Container(
-          padding: const EdgeInsets.all(24),
-          color: Colors.black,
           width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.forum, color: Colors.white, size: 20),
-                  const SizedBox(width: 12),
-                  Text('ChatON ASSISTANT', style: MiffyStyle.headerBlack.copyWith(color: Colors.white, fontSize: 20)),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text('POWERED BY GEMINI AI', style: MiffyStyle.overline.copyWith(color: Colors.white60)),
-            ],
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF424242), Colors.black], // Dark Gray to Black
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-        ),
-
-        // --- CHAT DISPLAY AREA ---
-        Expanded(
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(24),
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final msg = _messages[index];
-              final isUser = msg['role'] == 'user';
-              
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Row(
+            children: [
+              Image.asset(
+                'assets/icons/bot_icon.png',
+                height: 40,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.smart_toy, color: Colors.white, size: 40),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      isUser ? 'PASSENGERS' : 'ChatON', 
-                      style: MiffyStyle.overline.copyWith(color: Colors.black54)
+                    RichText(
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Inter',
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Chat',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          TextSpan(
+                            text: 'ON',
+                            style: TextStyle(color: Color(0xFFFF6026)),
+                          ),
+                          TextSpan(
+                            text: ' ASSISTANT',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isUser ? const Color(0xFFFFD500) : Colors.white,
-                        border: Border.all(color: Colors.black, width: 2),
-                        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(3, 3))],
-                      ),
-                      child: Text(
-                        msg['text']!,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, height: 1.5),
+                    RichText(
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Inter',
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'POWERED BY ',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          TextSpan(
+                            text: 'ABI-NI AI',
+                            style: TextStyle(color: Color(0xFFFF6026)),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              );
-            },
+              ),
+              Image.asset(
+                'assets/icons/star_dark.png',
+                height: 30,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.star, color: Colors.grey, size: 30),
+              ),
+            ],
+          ),
+        ),
+
+        // --- 3. MAIN CHAT BODY (Inside Dotted Border) ---
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: DottedBorder(
+              color: const Color(0xFFFF6026),
+              dashPattern: const [6, 3],
+              borderType: BorderType.RRect,
+              radius: const Radius.circular(20),
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final msg = _messages[index];
+                  final isUser = msg['role'] == 'user';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: isUser
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isUser ? 'YOU' : 'ChatON',
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        // --- 4. NEO-BRUTALIST CHAT BUBBLE STYLING ---
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isUser
+                                ? const Color(0xFFFFD500)
+                                : Colors.white,
+                            border: Border.all(color: Colors.black, width: 2),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black,
+                                offset: Offset(4, 4),
+                                blurRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            msg['text']!,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              height: 1.5,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ),
 
@@ -236,54 +329,65 @@ class _AssistantScreenState extends State<AssistantScreen> {
         if (_isLoading)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: LinearProgressIndicator(color: Colors.black, backgroundColor: Colors.white),
+            child: LinearProgressIndicator(
+              color: Color(0xFFFF6026),
+              backgroundColor: Colors.white,
+            ),
           ),
 
-        // --- BOTTOM INPUT AREA ---
+        // --- 5. BOTTOM INPUT AREA ---
         Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
             color: Colors.white,
-            border: Border(top: BorderSide(color: Colors.black, width: 2)),
+            border: Border.all(color: Colors.black, width: 2),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 2),
-                        color: Colors.grey.shade100,
-                      ),
-                      child: TextField(
-                        controller: _destinationController,
-                        onSubmitted: (_) => _sendMessage(),
-                        decoration: const InputDecoration(
-                          hintText: 'Ask about routes, fares, places...',
-                          hintStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.black38),
-                          border: InputBorder.none,
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Colors.black, width: 1),
+                    ),
+                    child: TextField(
+                      // The controller is correctly attached here
+                      controller: _destinationController,
+                      onSubmitted: (_) => _sendMessage(),
+                      decoration: const InputDecoration(
+                        hintText: 'Ask about routes, fares, etc...',
+                        hintStyle: TextStyle(
+                          color: Colors.black38,
+                          fontWeight: FontWeight.w500,
                         ),
+                        border: InputBorder.none,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: _sendMessage,
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        border: Border.all(color: Colors.black, width: 2),
-                      ),
-                      child: const Icon(Icons.send, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  // The send message function is correctly assigned here
+                  onTap: _sendMessage,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF6026),
+                      shape: BoxShape.circle,
                     ),
+                    child: const Icon(Icons.send_rounded, color: Colors.white),
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ],

@@ -50,28 +50,20 @@ class _MainLayoutState extends State<MainLayout> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Row(
-          children: [
-            Icon(Icons.directions_bus, color: Colors.black),
-            SizedBox(width: 8),
-            Text(
-              'BUTUAN TRANSIT', 
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: -0.5)
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Color(0xFFFF6026)),
+          onPressed: () {},
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: Container(color: Colors.black, height: 2),
+        centerTitle: true,
+        title: Image.asset(
+          'assets/icons/logo_main.png',
+          height: 30,
+          fit: BoxFit.contain,
         ),
       ),
-      
       body: _screens[_currentIndex],
-      
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.black, width: 2)),
-        ),
+        color: Colors.white,
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -81,25 +73,23 @@ class _MainLayoutState extends State<MainLayout> {
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
-          selectedItemColor: Colors.black,
-          unselectedItemColor: Colors.black,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10),
+          elevation: 0,
+          selectedItemColor: const Color(0xFFFF6026),
+          unselectedItemColor: Colors.grey,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
           items: const [
             BottomNavigationBarItem(
-              icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.home)),
-              label: 'HOME',
+              icon: Icon(Icons.home),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.map)),
-              label: 'ROUTES',
+              icon: Icon(Icons.map),
+              label: 'Map',
             ),
-            
             BottomNavigationBarItem(
-              icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.help_outline)),
-              label: 'AI ASK',
+              icon: Icon(Icons.auto_awesome),
+              label: 'AI',
             ),
           ],
         ),

@@ -17,6 +17,7 @@ dependencies:
   intl: ^0.20.2
   dotted_border: ^2.0.0+3 
   dotted_line: ^3.2.1
+  firebase_auth: ^6.4.0
 
 dev_dependencies:
   flutter_test:

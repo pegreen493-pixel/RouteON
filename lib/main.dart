@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:startup_app_route_on/screens/login_screen.dart';
+import 'package:startup_app_route_on/screens/signup_screen.dart';
+import 'firebase_options.dart';
 
 // --- YOUR SCREENS ---
-import 'screens/home_screen.dart'; 
+import 'screens/home_screen.dart';
 import 'screens/routes_screen.dart';
 import 'screens/assistant_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const ButuanTransitApp());
 }
 
@@ -21,7 +27,7 @@ class ButuanTransitApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Inter',
       ),
-      home: const MainLayout(),
+      home: const SignupScreen(),
     );
   }
 }
@@ -35,12 +41,12 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   // Opens to the FARES tab so you can test it immediately
-  int _currentIndex = 0; 
+  int _currentIndex = 0;
 
   // --- THE NAVIGATION LOGIC ---
   final List<Widget> _screens = [
-    const HomeScreen(), 
-    const RoutesScreen(), 
+    const HomeScreen(),
+    const RoutesScreen(),
     const AssistantScreen(),
   ];
 
@@ -79,14 +85,8 @@ class _MainLayoutState extends State<MainLayout> {
           showSelectedLabels: false,
           showUnselectedLabels: false,
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Map',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
             BottomNavigationBarItem(
               icon: Icon(Icons.auto_awesome),
               label: 'AI',

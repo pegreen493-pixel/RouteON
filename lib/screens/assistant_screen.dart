@@ -174,7 +174,16 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF424242),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('AI Assistant', style: TextStyle(color: Colors.white)),
+      ),
+      body: SafeArea(
+        child: Column(
       children: [
         // --- 2. TOP HEADER BANNER ---
         Container(
@@ -391,6 +400,8 @@ class _AssistantScreenState extends State<AssistantScreen> {
           ),
         ),
       ],
+    ),
+      ),
     );
   }
 }

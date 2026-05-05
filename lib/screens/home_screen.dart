@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:dotted_line/dotted_line.dart';
+import 'routes_screen.dart';
+import 'assistant_screen.dart';
+import 'news_screen.dart';
+import 'fees_screen.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -48,21 +54,6 @@ class GreetingCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'MAAYONG ADLAW!',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-              Icon(Icons.wb_sunny, color: Color(0xFFFF6026), size: 16),
-            ],
-          ),
-          const SizedBox(height: 8),
           const Text(
             'Where do you\nwant to go?',
             style: TextStyle(
@@ -74,23 +65,21 @@ class GreetingCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Expanded(
-                child: Text(
-                  'Butuan City • 32°C Sunny • 04:31 PM',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                  overflow: TextOverflow.ellipsis,
+              Expanded(
+                child: Image.asset(
+                  'assets/icons/logo_divider.png',
+                  height: 45,
+                  alignment: Alignment.centerRight,
+                  fit: BoxFit.contain,
                 ),
               ),
-              Image.asset(
-                'assets/icons/logo_divider.png',
-                width: 120,
-                height: 30,
-                fit: BoxFit.contain,
-              ),
             ],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Butuan City • 32°C Sunny',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
       ),
@@ -163,30 +152,62 @@ class QuickActionsGrid extends StatelessWidget {
       mainAxisSpacing: 15,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      children: const [
-        ActionCard(
-          title: 'MAP',
-          subtitle: 'Find Routes',
-          imagePath: 'assets/icons/maps.png',
-          gradientColors: [Color(0xFF4DB6FF), Color(0xFF18A0FB)],
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RoutesScreen()),
+            );
+          },
+          child: const ActionCard(
+            title: 'MAP',
+            subtitle: 'Find Routes',
+            imagePath: 'assets/icons/maps.png',
+            gradientColors: [Color(0xFF4DB6FF), Color(0xFF18A0FB)],
+          ),
         ),
-        ActionCard(
-          title: 'FEES',
-          subtitle: 'Calculate',
-          imagePath: 'assets/icons/fees.png',
-          gradientColors: [Color(0xFFA6E464), Color(0xFF81D135)],
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FeesScreen()),
+            );
+          },
+          child: const ActionCard(
+            title: 'FEES',
+            subtitle: 'Calculate',
+            imagePath: 'assets/icons/fees.png',
+            gradientColors: [Color(0xFFA6E464), Color(0xFF81D135)],
+          ),
         ),
-        ActionCard(
-          title: 'AI ASK',
-          subtitle: 'AI Assistance',
-          imagePath: 'assets/icons/aiAsk.png',
-          gradientColors: [Color(0xFFFF885A), Color(0xFFFF6026)],
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AssistantScreen()),
+            );
+          },
+          child: const ActionCard(
+            title: 'AI ASK',
+            subtitle: 'AI Assistance',
+            imagePath: 'assets/icons/aiAsk.png',
+            gradientColors: [Color(0xFFFF885A), Color(0xFFFF6026)],
+          ),
         ),
-        ActionCard(
-          title: 'NEWS',
-          subtitle: 'Intes Updates',
-          imagePath: 'assets/icons/news.png',
-          gradientColors: [Color(0xFF595959), Color(0xFF2E2E2E)],
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NewsScreen()),
+            );
+          },
+          child: const ActionCard(
+            title: 'NEWS',
+            subtitle: 'Intes Updates',
+            imagePath: 'assets/icons/news.png',
+            gradientColors: [Color(0xFF595959), Color(0xFF2E2E2E)],
+          ),
         ),
       ],
     );

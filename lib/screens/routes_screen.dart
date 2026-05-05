@@ -7,96 +7,104 @@ class RoutesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: DottedBorder(
-          color: Colors.red,
-          dashPattern: const [6, 3],
-          borderType: BorderType.RRect,
-          radius: const Radius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Section 1: Assistance Widget (Top Left)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.star, color: Colors.black, size: 24),
-                      const SizedBox(width: 8),
-                      // Use aiAsk asset or a fallback icon
-                      Image.asset(
-                        'assets/icons/aiAsk.png',
-                        width: 32,
-                        height: 32,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.smart_toy, size: 32),
-                      ),
-                      const SizedBox(width: 8),
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Need Assistance?',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text(
+          'Routes & Zones',
+          style: TextStyle(color: Colors.black),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: DottedBorder(
+            color: Colors.red,
+            dashPattern: const [6, 3],
+            borderType: BorderType.RRect,
+            radius: const Radius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Section 1: Assistance Widget (Top Left)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.star, color: Colors.black, size: 24),
+                        const SizedBox(width: 8),
+                        // Use aiAsk asset or a fallback icon
+                        Image.asset(
+                          'assets/icons/aiAsk.png',
+                          width: 32,
+                          height: 32,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.smart_toy, size: 32),
+                        ),
+                        const SizedBox(width: 8),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Need Assistance?',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Section 2: Mode Selection List
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MapViewerScreen(
+                              title: 'PUJ Routes',
+                              imagePath: 'assets/Butuan_map.png',
                             ),
                           ),
-                          Text(
-                            'Click me!',
-                            style: TextStyle(color: Colors.red, fontSize: 12),
-                          ),
-                        ],
+                        );
+                      },
+                      child: const ModeCard(
+                        title: 'PUJ',
+                        subtitle: 'Routes',
+                        imagePath: 'assets/images/Puj.png',
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Section 2: Mode Selection List
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MapViewerScreen(
-                            title: 'PUJ Routes',
-                            imagePath: 'assets/Butuan_map.png',
-                          ),
-                        ),
-                      );
-                    },
-                    child: const ModeCard(
-                      title: 'PUJ',
-                      subtitle: 'Routes',
-                      imagePath: 'assets/images/Puj.png',
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MapViewerScreen(
-                            title: 'Tricycle Zones',
-                            imagePath: 'assets/Tricycle_map.png',
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MapViewerScreen(
+                              title: 'Tricycle Zones',
+                              imagePath: 'assets/Tricycle_map.png',
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: const ModeCard(
-                      title: 'TRICYCLE',
-                      subtitle: 'Zones',
-                      imagePath: 'assets/images/Tricycle.png',
+                        );
+                      },
+                      child: const ModeCard(
+                        title: 'TRICYCLE',
+                        subtitle: 'Zones',
+                        imagePath: 'assets/images/Tricycle.png',
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -132,10 +140,7 @@ class ModeCard extends StatelessWidget {
             offset: const Offset(0, 5),
           ),
         ],
-        image: DecorationImage(
-          image: AssetImage(imagePath),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
       ),
     );
   }
